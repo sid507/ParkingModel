@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import datetime
+from model import *
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
@@ -52,5 +53,41 @@ def entry():
 		pass
 
 
+@app.route('/test',methods=["GET"])
+def test():
+	licence_plate_no = "MH01AE1111" #request.data.licensePlateNo
+		# Find date 30 days before
+	date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
+	# Get records of last one month
+	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == "MH01AE1111" ).all()
+
+	exit_time = []
+	entry_time = []
+	day = []
+
+	for record in records:
+		exit_time.append(record.exit_time)
+		entry_time.append(record.entry_time)
+		day.append(record.exit_day.lower()) 
+
+
+	row = addMissingDay(day,entry_time,exit_time)
+
+	# Convert the above list in dataframe
+	df=convertToDataFrame(row,['Day','Entry','Exit'])
+	
+	# Convert the String time into pd.toDatetime
+
+	df['Entry'] = pd.to_datetime(df['Entry'])
+	df['Exit'] = pd.to_datetime(df['Exit'])
+
+
+	# Apply the preprocessing
+	return predict(df)
+
+	# return "Success"
+	
+
 if (__name__ == "__main__"):
-  app.run(debug = True)
+	app.debug=True
+	app.run(debug = True)
