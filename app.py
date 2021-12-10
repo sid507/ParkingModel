@@ -36,12 +36,16 @@ def exit():
 		exit_time = []
 		entry_time = []
 		day = []
+		exit_date=[]
 
 		for record in records:
+			exit_date.append(record.exit_date)
 			exit_time.append(record.exit_time)
 			entry_time.append(record.entry_time)
 			day.append(record.exit_day) 
-
+		print(exit_time)
+		print(entry_time)
+		print(day)
 		# Using this record we will predict when user will arrive
 
 
@@ -59,22 +63,26 @@ def test():
 		# Find date 30 days before
 	date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
 	# Get records of last one month
-	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == "MH01AE1111" ).all()
+	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == "MH01AE4444" ).all()
 
 	exit_time = []
 	entry_time = []
 	day = []
+	exit_date=[]
 
 	for record in records:
+		exit_date.append(record.exit_date)
 		exit_time.append(record.exit_time)
 		entry_time.append(record.entry_time)
 		day.append(record.exit_day.lower()) 
+	# print(exit_time)
+	# print(entry_time)
+	# print(day)
+	# print(exit_date)
 
-
-	row = addMissingDay(day,entry_time,exit_time)
-
-	# Convert the above list in dataframe
-	df=convertToDataFrame(row,['Day','Entry','Exit'])
+	# Adding missing data and converting to dataframe
+	df = addMissingDay(date,datetime.datetime.today().date(),exit_date,day,entry_time,exit_time)
+	print(df)
 	
 	# Convert the String time into pd.toDatetime
 
@@ -83,7 +91,7 @@ def test():
 
 
 	# Apply the preprocessing
-	return predict(df)
+	return predict(df,pd.to_datetime('10:25:20'),'friday')
 
 	# return "Success"
 	
