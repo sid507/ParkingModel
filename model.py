@@ -2,10 +2,18 @@ import pandas as pd
 from xgboost import XGBRegressor
 import datetime
 
+def getCurrentTime():
+  time = datetime.datetime.now().time()
+  return f"{time.hour}:{time.minute}:{time.second}"
+
 def convertToDataFrame(dataList,columnName):
     df = pd.DataFrame(dataList,columns=columnName)
     return df
 
+def timeToSeconds(time_string):
+  values = time_string.split(':')
+  return int(values[0]) * 3600 + int(values[1]) * 60 + int(values[2])
+  
 def addMissingDay(startDate,endDate,exitdate,day,entryTime,exitTime):
     def handleMissingDay(row):
       if row['Day']==0:
