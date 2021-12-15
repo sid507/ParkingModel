@@ -8,6 +8,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
 db = SQLAlchemy(app)
 
+weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
 class VehicleLog(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
 	vehicle_no = db.Column(db.String(20))
@@ -21,9 +23,9 @@ class VehicleLog(db.Model):
 exit_time = input('Enter exit time: ')
 entry_time = input('Enter entry time: ')
 vehicle_no = input('Enter vehicle no: ')
-date = datetime.datetime.today().date()
-day = datetime.datetime.today().weekday()
-
+days_before = int(input('Days before: '))
+date = (datetime.datetime.today() - datetime.timedelta(days=days_before)).date()
+day = weekdays[date.weekday()]
 
 log = VehicleLog(vehicle_no = vehicle_no, exit_date = date, exit_time = exit_time, exit_day = day, entry_time = entry_time, entry_date = date)
 db.session.add(log)
