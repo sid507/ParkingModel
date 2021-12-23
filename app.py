@@ -34,12 +34,12 @@ def resident_exit():
 		# Find date 30 days before
 		date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
 		# Get records of last one month
-		records = VehicleLog.query.filter_by(exit_date >= date, vehicle_no = license_plate_no).all()
+		records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all()
 
 		exit_time = []
 		entry_time = []
 		day = []
-		exit_date=[]
+		exit_date =[]
 
 		for record in records:
 			exit_date.append(record.exit_date)
@@ -57,6 +57,7 @@ def resident_exit():
 
 		# Apply the preprocessing
 		prediction = predict(df, pd.to_datetime(getCurrentTime()),weekdays[datetime.datetime.today().weekday()])
+
 		if (prediction == "Irregular Data"):
 			prediction = None
 
@@ -79,7 +80,7 @@ def resident_entry():
 		log.entry_date = datetime.datetime.today().date()
 		db.session.commit()
 
-		return jsonify({"message":"Log created successfully"})
+		return jsonify({"message":"Log updated successfully"})
 
 
 @app.route('/allocate')

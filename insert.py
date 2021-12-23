@@ -1,4 +1,4 @@
-# Code for inserting dummy data
+# Utility function for inserting dummy data
 
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
