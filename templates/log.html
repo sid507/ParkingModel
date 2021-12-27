@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<div>
+	<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Id</th>
+      <th scope="col">Vehicle No.</th>
+      <th scope="col">Exit Date</th>
+      <th scope="col">Exit Time</th>
+      <th scope="col">Exit Day</th>
+      <th scope="col">Entry Date</th>
+      <th scope="col">Entry Time</th>
+      <th scope="col">Predicted Entry Time</th>
+    </tr>
+  </thead>
+  <tbody>
+  	{% for log in logs %}
+    <tr>
+      <td><b>{{log.id}}</b></td>
+      <td>{{log.vehicle_no}}</td>
+      <td>{{log.exit_date}}</td>
+      <td>{{log.exit_time}}</td>
+      <td>{{log.exit_day}}</td>
+      <td>{{log.entry_date}}</td>
+      <td>{{log.entry_time}}</td>
+      <td>{{log.predicted_entry_time}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

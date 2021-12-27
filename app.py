@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 from model import *
@@ -22,9 +22,14 @@ class VehicleLog(db.Model):
 	def __repr__(self):
 		return f"{self.vehicle_no} {self.exit_date} {self.exit_time} {self.exit_day} {self.entry_date} {self.entry_time} {self.predicted_entry_time}"
 
-@app.route('/')
-def hello_world():
-	return 'hello_world'
+@app.route('/logs')
+def logs():
+	vno = request.args.get('vno')
+	if vno == None:
+		logs = VehicleLog.query.all()
+	else:
+		logs = VehicleLog.query.filter_by(vehicle_no = vno)
+	return render_template('log.html', logs=logs)
 
 @app.route('/resident-exit', methods=["POST"])
 def resident_exit():
