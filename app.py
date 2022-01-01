@@ -31,7 +31,7 @@ def logs():
 		logs = VehicleLog.query.filter_by(vehicle_no = vno)
 	return render_template('log.html', logs=logs)
 
-@app.route('/resident-exit', methods=["POST"])
+@app.route('/exit', methods=["POST"])
 def resident_exit():
 	if (request.method == "POST"):
 		# Get license plate from query arguments
@@ -65,7 +65,6 @@ def resident_exit():
 
 		if (prediction == "Irregular Data"):
 			prediction = None
-
 		# Store a new record for vehicle exit
 		log = VehicleLog(vehicle_no = license_plate_no, exit_date = datetime.datetime.today().date(), exit_time = getCurrentTime(), exit_day = weekdays[datetime.datetime.today().weekday()], predicted_entry_time = prediction)
 		db.session.add(log)
@@ -74,7 +73,7 @@ def resident_exit():
 		return jsonify({"message":"Log created successfully"})
 
 		
-@app.route('/resident-entry', methods=["POST"])
+@app.route('/entry', methods=["POST"])
 def resident_entry():
 	if (request.method == "POST"):
 		# Get license plate from query arguments
