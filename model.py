@@ -116,7 +116,6 @@ def predict(data2,x_time,x_day):
     # Taking all data leaving last data for test
     x_train=data2[feature][:-1]
     y_train=data2[label][:-1]
-    
     # Prepare the test data
     x_test = pd.DataFrame([[x_time.hour * 3600 + x_time.minute * 60 + x_time.second,day.index(x_day)]],columns=feature)
     

@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///silversolitaire.db'
 db = SQLAlchemy(app)
 
 weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']

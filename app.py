@@ -4,11 +4,12 @@ import datetime
 from model import *
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
 db = SQLAlchemy(app)
 
 weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
+# Schema
 class VehicleLog(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
 	vehicle_no = db.Column(db.String(20))
@@ -24,6 +25,9 @@ class VehicleLog(db.Model):
 
 @app.route('/logs')
 def logs():
+	society_name = request.args.get('society')
+	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
+	
 	vno = request.args.get('vno')
 	if vno == None:
 		logs = VehicleLog.query.all()
@@ -33,6 +37,9 @@ def logs():
 
 @app.route('/resident-exit', methods=["POST"])
 def resident_exit():
+	society_name = request.args.get('society')
+	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
+	
 	if (request.method == "POST"):
 		# Get license plate from query arguments
 		license_plate_no = request.args.get('licensePlateNo')
@@ -62,20 +69,24 @@ def resident_exit():
 
 		# Apply the preprocessing
 		prediction = predict(df, pd.to_datetime(getCurrentTime()),weekdays[datetime.datetime.today().weekday()])
+		print(prediction)
 
 		if (prediction == "Irregular Data"):
 			prediction = None
 
 		# Store a new record for vehicle exit
-		log = VehicleLog(vehicle_no = license_plate_no, exit_date = datetime.datetime.today().date(), exit_time = getCurrentTime(), exit_day = weekdays[datetime.datetime.today().weekday()], predicted_entry_time = prediction)
-		db.session.add(log)
-		db.session.commit()
+		# log = VehicleLog(vehicle_no = license_plate_no, exit_date = datetime.datetime.today().date(), exit_time = getCurrentTime(), exit_day = weekdays[datetime.datetime.today().weekday()], predicted_entry_time = prediction)
+		# db.session.add(log)
+		# db.session.commit()
 
 		return jsonify({"message":"Log created successfully"})
 
 		
 @app.route('/resident-entry', methods=["POST"])
 def resident_entry():
+	society_name = request.args.get('society')
+	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
+	
 	if (request.method == "POST"):
 		# Get license plate from query arguments
 		license_plate_no = request.args.get('licensePlateNo')
@@ -90,6 +101,9 @@ def resident_entry():
 
 @app.route('/allocate')
 def allocate():
+	society_name = request.args.get('society')
+	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
+	
 	stay_time = float(request.args.get('time'))
 	stay_time = int(stay_time * 3600)
 	time = datetime.datetime.now().time()
