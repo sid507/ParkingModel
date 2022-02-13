@@ -78,7 +78,7 @@ def resident_exit():
 		# db.session.add(log)
 		# db.session.commit()
 
-		return jsonify({"message":"Log created successfully"})
+		return jsonify({"message":"Log created successfully"}), 200
 
 		
 @app.route('/entry', methods=["POST"])
@@ -119,6 +119,21 @@ def allocate():
 				parking_space = record.vehicle_no
 
 	return jsonify({"parking_space":parking_space})
+
+@app.route('/usage')
+def usage():
+	society_name = request.args.get('society')
+	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
+	
+	# Get license plate from query arguments
+	license_plate_no = request.args.get('licensePlateNo')
+	# Find date 30 days before
+	date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
+	# Get records of last one month
+	usage = len(VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all())
+
+	return jsonify({"usage":usage}), 201
+
 
 if (__name__ == "__main__"):
 	app.debug=True
