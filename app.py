@@ -130,11 +130,27 @@ def usage():
 	# Find date 30 days before
 	date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
 	# Get records of last one month
-	usage = len(VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all())
+	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no, VehicleLog.entry_date != None).all()
+	usage = len(records)
+	exit_time = []
+	entry_time = []
+	day = []
+	exit_date =[]
 
-	return jsonify({"usage":usage}), 201
+	for record in records:
+		exit_date.append(record.exit_date)
+		exit_time.append(record.exit_time)
+		entry_time.append(record.entry_time)
+		day.append(record.exit_day.lower()) 
+
+	# Adding missing data and converting to dataframe
+	df = addMissingDay(date,datetime.datetime.today().date(),exit_date,day,entry_time,exit_time)
+	exit_time = list(map(timeToSeconds,df['Exit'].tolist()))
+	entry_time = list(map(timeToSeconds,df['Entry'].tolist()))
+	day = list(map(lambda x: x[0].upper(), df['Day'].tolist()))
+	return jsonify({"usage":usage, "exit_time":exit_time, "entry_time":entry_time, "day":day}), 201
 
 
 if (__name__ == "__main__"):
 	app.debug=True
-	app.run(debug = True)
+	app.run(host="192.168.0.112", debug = True)

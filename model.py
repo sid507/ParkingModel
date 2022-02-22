@@ -11,6 +11,8 @@ def convertToDataFrame(dataList,columnName):
     return df
 
 def timeToSeconds(time_string):
+  if(time_string==0):
+    return 0
   values = time_string.split(':')
   return int(values[0]) * 3600 + int(values[1]) * 60 + int(values[2])
   
