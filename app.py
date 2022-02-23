@@ -41,45 +41,46 @@ def resident_exit():
 	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
 	
 	if (request.method == "POST"):
-		# Get license plate from query arguments
-		license_plate_no = request.args.get('licensePlateNo')
-		# Find date 30 days before
-		date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
-		# Get records of last one month
-		records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all()
+		try:
+			# Get license plate from query arguments
+			license_plate_no = request.args.get('licensePlateNo')
+			# Find date 30 days before
+			date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
+			# Get records of last one month
+			records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all()
 
-		exit_time = []
-		entry_time = []
-		day = []
-		exit_date =[]
+			exit_time = []
+			entry_time = []
+			day = []
+			exit_date =[]
 
-		for record in records:
-			exit_date.append(record.exit_date)
-			exit_time.append(record.exit_time)
-			entry_time.append(record.entry_time)
-			day.append(record.exit_day.lower()) 
+			for record in records:
+				exit_date.append(record.exit_date)
+				exit_time.append(record.exit_time)
+				entry_time.append(record.entry_time)
+				day.append(record.exit_day.lower()) 
 
-		# Adding missing data and converting to dataframe
-		df = addMissingDay(date,datetime.datetime.today().date(),exit_date,day,entry_time,exit_time)
-		print(df)
-		
-		# Convert the String time into pd.toDatetime
-		df['Entry'] = pd.to_datetime(df['Entry'])
-		df['Exit'] = pd.to_datetime(df['Exit'])
+			# Adding missing data and converting to dataframe
+			df = addMissingDay(date,datetime.datetime.today().date(),exit_date,day,entry_time,exit_time)
+			print(df)
+			
+			# Convert the String time into pd.toDatetime
+			df['Entry'] = pd.to_datetime(df['Entry'])
+			df['Exit'] = pd.to_datetime(df['Exit'])
 
-		# Apply the preprocessing
-		prediction = predict(df, pd.to_datetime(getCurrentTime()),weekdays[datetime.datetime.today().weekday()])
-		print(prediction)
+			# Apply the preprocessing
+			prediction = predict(df, pd.to_datetime(getCurrentTime()),weekdays[datetime.datetime.today().weekday()])
 
-		if (prediction == "Irregular Data"):
-			prediction = None
-		# Store a new record for vehicle exit
-		# log = VehicleLog(vehicle_no = license_plate_no, exit_date = datetime.datetime.today().date(), exit_time = getCurrentTime(), exit_day = weekdays[datetime.datetime.today().weekday()], predicted_entry_time = prediction)
-		# db.session.add(log)
-		# db.session.commit()
+			if (prediction == "Irregular Data"):
+				prediction = None
+			# Store a new record for vehicle exit
+			log = VehicleLog(vehicle_no = license_plate_no, exit_date = datetime.datetime.today().date(), exit_time = getCurrentTime(), exit_day = weekdays[datetime.datetime.today().weekday()], predicted_entry_time = prediction)
+			db.session.add(log)
+			db.session.commit()
 
-		return jsonify({"message":"Log created successfully"}), 200
-
+			return jsonify({"message":"Log created successfully"}), 201
+		except:
+			return jsonify({"message":"Something went wrong"}), 400
 		
 @app.route('/entry', methods=["POST"])
 def resident_entry():
@@ -87,16 +88,18 @@ def resident_entry():
 	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
 	
 	if (request.method == "POST"):
-		# Get license plate from query arguments
-		license_plate_no = request.args.get('licensePlateNo')
-		# Update log
-		log = VehicleLog.query.filter_by(vehicle_no = license_plate_no, entry_time = None)[-1]
-		log.entry_time = getCurrentTime()
-		log.entry_date = datetime.datetime.today().date()
-		db.session.commit()
+		try:
+			# Get license plate from query arguments
+			license_plate_no = request.args.get('licensePlateNo')
+			# Update log
+			log = VehicleLog.query.filter_by(vehicle_no = license_plate_no, entry_time = None)[-1]
+			log.entry_time = getCurrentTime()
+			log.entry_date = datetime.datetime.today().date()
+			db.session.commit()
 
-		return jsonify({"message":"Log updated successfully"})
-
+			return jsonify({"message":"Log updated successfully"}), 200
+		except:
+			return jsonify({"message":"Something went wrong"}), 400
 
 @app.route('/allocate')
 def allocate():
@@ -127,15 +130,20 @@ def usage():
 	
 	# Get license plate from query arguments
 	license_plate_no = request.args.get('licensePlateNo')
-	# Find date 30 days before
-	date = (datetime.datetime.today() - datetime.timedelta(days = 30)).date()
+	# Find date 28 days before
+	date = (datetime.datetime.today() - datetime.timedelta(days = 28)).date()
 	# Get records of last one month
-	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no, VehicleLog.entry_date != None).all()
+	records = VehicleLog.query.filter(VehicleLog.exit_date >= date, VehicleLog.vehicle_no == license_plate_no).all()
 	usage = len(records)
 	exit_time = []
 	entry_time = []
 	day = []
 	exit_date =[]
+
+	# Check if vehicle is currently in use or not
+	in_use = False
+	if(usage>0 and records[-1].entry_date == None):
+		in_use = True
 
 	for record in records:
 		exit_date.append(record.exit_date)
@@ -144,11 +152,11 @@ def usage():
 		day.append(record.exit_day.lower()) 
 
 	# Adding missing data and converting to dataframe
-	df = addMissingDay(date,datetime.datetime.today().date(),exit_date,day,entry_time,exit_time)
+	df = addMissingDay(date, (datetime.datetime.today() - datetime.timedelta(days = 1)).date(),exit_date,day,entry_time,exit_time)
 	exit_time = list(map(timeToSeconds,df['Exit'].tolist()))
 	entry_time = list(map(timeToSeconds,df['Entry'].tolist()))
 	day = list(map(lambda x: x[0].upper(), df['Day'].tolist()))
-	return jsonify({"usage":usage, "exit_time":exit_time, "entry_time":entry_time, "day":day}), 201
+	return jsonify({"usage":usage, "exit_time":exit_time, "entry_time":entry_time, "day":day, "in_use":in_use}), 201
 
 
 if (__name__ == "__main__"):
