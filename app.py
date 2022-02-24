@@ -106,22 +106,25 @@ def allocate():
 	society_name = request.args.get('society')
 	app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{society_name}.db'
 	
-	stay_time = float(request.args.get('time'))
-	stay_time = int(stay_time * 3600)
-	time = datetime.datetime.now().time()
-	stay_till = stay_time + (time.hour * 3600 + time.minute * 60 + time.second)
-	records = VehicleLog.query.filter(VehicleLog.exit_date == datetime.datetime.today().date(), VehicleLog.entry_time == None, VehicleLog.predicted_entry_time != None).all()
-	
-	minimum = 999999
-	parking_space = ''
-	for record in records:
-		arrival_time = timeToSeconds(record.predicted_entry_time)
-		if (arrival_time > stay_till):
-			if arrival_time < minimum:
-				minimum = arrival_time
-				parking_space = record.vehicle_no
+	try:
+		stay_time = float(request.args.get('time'))
+		stay_time = int(stay_time * 3600)
+		time = datetime.datetime.now().time()
+		stay_till = stay_time + (time.hour * 3600 + time.minute * 60 + time.second)
+		records = VehicleLog.query.filter(VehicleLog.exit_date == datetime.datetime.today().date(), VehicleLog.entry_time == None, VehicleLog.predicted_entry_time != None).all()
+		
+		minimum = 999999
+		parking_space = ''
+		for record in records:
+			arrival_time = timeToSeconds(record.predicted_entry_time)
+			if (arrival_time > stay_till):
+				if arrival_time < minimum:
+					minimum = arrival_time
+					parking_space = record.vehicle_no
 
-	return jsonify({"parking_space":parking_space})
+		return jsonify({"parking_space":parking_space}), 200
+	except:
+		return jsonify({"message":"Something went wrong"}), 400
 
 @app.route('/usage')
 def usage():
