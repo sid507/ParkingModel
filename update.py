@@ -18,11 +18,14 @@ class VehicleLog(db.Model):
 	entry_time = db.Column(db.String(20))
 	predicted_entry_time = db.Column(db.String(20))
 
+# logs = VehicleLog.query.filter_by(vehicle_no='MH01AE2222').all()
+# for log in logs:
+# 	log.vehicle_no = 'MH03DG0611'
 inp = int(input('Enter record id: '))
 
 log = VehicleLog.query.get(inp)
 
-choice = int(input('Press to update\n1. exit time\n2. entry time\n3. exit date\n4. entry date\n5. vehicle no\n'))
+choice = int(input('Press to update\n1. exit time\n2. entry time\n3. exit date\n4. entry date\n5. vehicle no\n6. exit day\n'))
 if choice == 1:
 	inp = input('Enter exit time: ')
 	log.exit_time = inp
@@ -37,8 +40,11 @@ elif choice == 4:
 	inp = int(input('Enter days before: '))
 	date = (datetime.datetime.today() - datetime.timedelta(days=inp)).date()
 	log.entry_date = date
-else:
+elif choice == 5:
 	inp = input('Enter vehicle no: ')
 	log.vehicle_no = inp
+else:
+	inp = input('Enter day: ')
+	log.exit_day = inp
 
 db.session.commit()

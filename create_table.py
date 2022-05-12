@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-
 society_name = input('Enter society name: ')
 
 app = Flask(__name__)
@@ -20,6 +19,12 @@ class VehicleLog(db.Model):
 
 	def __repr__(self):
 		return f"{self.vehicle_no} {self.exit_date} {self.exit_time} {self.exit_day} {self.entry_date} {self.entry_time} {self.predicted_entry_time}"
+
+class Vehicles(db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	vehicle_no = db.Column(db.String(20))
+	flat = db.Column(db.String(30))
+	occupied = db.Column(db.Boolean, default=False)
 
 db.create_all()
 db.session.commit()

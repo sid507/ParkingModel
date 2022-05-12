@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///log.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///silversolitaire.db'
 db = SQLAlchemy(app)
 
 class VehicleLog(db.Model):
